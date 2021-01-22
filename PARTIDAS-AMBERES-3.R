@@ -6,7 +6,8 @@ library(topicmodels)
 
 
 # Lee el texto de las Siete Partidas
-partidas <- read_tsv("https://tinyurl.com/SP-Amberes")
+partidas <- read_tsv("https://tinyurl.com/SPAntwerpen-1")
+
 
 # Divide (tokeniza) en palabras por Título
 por_titulo_palabras <- partidas %>%
@@ -31,7 +32,8 @@ por_titulo_palabras %>%
 
 # Elimina palabras vacías
 
-vacias <- read_tsv("https://tinyurl.com/SP-vacias")
+partidas <- read_tsv("https://tinyurl.com/SPAntwerpen-2")
+
 
 palabra_conteo <- por_titulo_palabras %>%   
   anti_join(vacias)
@@ -44,9 +46,8 @@ palabra_conteo %>%
 especiales <- tibble(palabra = c("cosa", "cosas", "deue", "deuen", "dezimos",
                                  "dezir", "fazen", "fazer", "ley", "manera",
                                  "ome", "omes", "puede", "pueden", "razon",
-                                 "dar", "dado", "tenudo", "seria", "maneras",
-                                 "podria", "conuiene", "razones", "quiere"))
-
+                                 "dar", "dado", "tenudo", "seria", "parte",
+                                 "partes", "fecho", "fecha"))
 palabra_conteo <- palabra_conteo %>%   
   anti_join(especiales)
 

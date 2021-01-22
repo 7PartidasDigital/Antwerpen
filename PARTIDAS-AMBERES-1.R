@@ -38,7 +38,7 @@ especiales <- tibble(palabra = c("cosa", "cosas", "deue", "deuen", "dezimos",
                                  "dezir", "fazen", "fazer", "ley", "manera",
                                  "ome", "omes", "puede", "pueden", "razon",
                                  "dar", "dado", "tenudo", "seria", "parte",
-                                 "partes"))
+                                 "partes", "fecho", "fecha"))
 # Las eliminamos
 palabra_conteo <- palabra_conteo %>%   
   anti_join(especiales)

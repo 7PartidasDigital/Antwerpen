@@ -895,5 +895,8 @@ fiziesse
 aquello
 quier
 diximos
+dos
+tres
+dixiemos
 
 
