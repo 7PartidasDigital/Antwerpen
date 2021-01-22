@@ -7,19 +7,14 @@ library(topicmodels)
 # Lee el texto de las Siete Partidas
 partidas <- read_tsv("https://tinyurl.com/SPAntwerpen-1")
 
-# Divide por capítulos. Solo válido para aquellos textos en los que los capítulos
-# estén marcados con el término CAPÍTULO. No importa si está en mayúscula, minúscula
-# o si está correctamente acentuado.
-
-
-# Divide (tokeniza) en palabras por Título
+# Divide por partidas
+# Divide (tokeniza) en palabras por Partida
 por_partida_palabras <- partidas %>%
   group_by(partida) %>%
   unite(texto, rubrica, texto, sep = " ") %>%
   unnest_tokens(palabra, texto) %>%
   ungroup()
-# Mira como queda ahora
-por_partida_palabras
+
 
 por_partida_palabras %>%
   count(partida, palabra, sort = T)
@@ -42,7 +37,8 @@ palabra_conteo
 especiales <- tibble(palabra = c("cosa", "cosas", "deue", "deuen", "dezimos",
                                  "dezir", "fazen", "fazer", "ley", "manera",
                                  "ome", "omes", "puede", "pueden", "razon",
-                                 "dar", "dado", "tenudo", "seria"))
+                                 "dar", "dado", "tenudo", "seria", "parte",
+                                 "partes"))
 # Las eliminamos
 palabra_conteo <- palabra_conteo %>%   
   anti_join(especiales)
