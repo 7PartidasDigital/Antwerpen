@@ -4,8 +4,8 @@ library(tidytext)
 library(tm)
 library(topicmodels)
 
-# Lee lel texto de las Siete Partidas
-partidas <- read_tsv("https://tinyurl.com/SP-Amberes")
+# Lee el texto de las Siete Partidas
+partidas <- read_tsv("https://tinyurl.com/SPAntwerpen-1")
 
 # Divide por capítulos. Solo válido para aquellos textos en los que los capítulos
 # estén marcados con el término CAPÍTULO. No importa si está en mayúscula, minúscula
@@ -26,7 +26,7 @@ por_partida_palabras %>%
 
 # Cargamos un fichero con palabras vacías específicas para el castellano medieval
 
-vacias <- read_tsv("https://tinyurl.com/SP-vacias")
+vacias <- read_tsv("https://tinyurl.com/SPAntwerpen-2")
 
 # Elimina palabras vacías
 palabra_conteo <- por_partida_palabras %>%   
