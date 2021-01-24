@@ -4,45 +4,48 @@ library(tidytext)
 library(tm)
 library(topicmodels)
 
-
 # Lee el texto de las Siete Partidas
 partidas <- read_tsv("https://tinyurl.com/SPAntwerpen-1")
 
-
 # Divide (tokeniza) en palabras por Título
-por_titulo_palabras <- partidas %>%
-  group_by(partida, titulo) %>%
-  unite(partida_titulo, partida, titulo) %>%
+por_leyes_palabras <- partidas %>%
+  group_by(partida, titulo, ley) %>%
+  unite(partida_titulo_ley, partida, titulo, ley) %>%
   unite(texto, rubrica, texto, sep = " ") %>%
   unnest_tokens(palabra, texto) %>%
   ungroup()
 
 # Mira como queda ahora
-por_titulo_palabras
+por_leyes_palabras
 
 # Echa una ojeada a las palabras más frecuentes. En otros análisis pueden ser útiles
 # pero para hacer un modelado de tópicos de nada nos sirven las llamadas palabras
 # vacías
 
-por_titulo_palabras %>%
+por_leyes_palabras %>%
   count(palabra, sort = T)
 
-por_titulo_palabras %>%
-  count(partida_titulo, palabra, sort = T)
+# Aquí se recuentan las palbras teniendo en cuenta
+# la triple variable Partida_Título_Ley
+
+por_leyes_palabras %>%
+  count(partida_titulo_ley, palabra, sort = T)
 
 # Elimina palabras vacías
+# Lee la lista externa
+vacias <- read_tsv("https://tinyurl.com/SPAntwerpen-2")
 
-partidas <- read_tsv("https://tinyurl.com/SPAntwerpen-2")
-
-
-palabra_conteo <- por_titulo_palabras %>%   
+# Las borra
+palabra_conteo <- por_leyes_palabras %>%   
   anti_join(vacias)
 
+# Las recuenta de nuevo
 palabra_conteo %>%   
-  count(partida_titulo, palabra, sort = TRUE)
+  count(partida_titulo_ley, palabra, sort = TRUE)
 
+# Pero como hay palabras que no comtempla la lista
+# y nos estorban, las borramos a "mano":
 
-# Elimina las palabras vacias especiales
 especiales <- tibble(palabra = c("cosa", "cosas", "deue", "deuen", "dezimos",
                                  "dezir", "fazen", "fazer", "ley", "manera",
                                  "ome", "omes", "puede", "pueden", "razon",
@@ -56,14 +59,14 @@ palabra_conteo <- palabra_conteo %>%
 # y cuál es su frecuencia
 
 palabra_conteo <- palabra_conteo %>%   
-  count(partida_titulo, palabra, sort = TRUE)
+  count(partida_titulo_ley, palabra, sort = TRUE)
 
 # En este momento, este dataframe está ordenado, con un término por documento por fila. 
 # Sin embargo, el paquete TOPICMODELS requiere un DocumentTermMatrix (del paquete TM). 
 # Se logra la adaptación a DocumentTermMatrix con cast_dtm de tidytext:
 
 partidas_dtm <- palabra_conteo %>%
-  cast_dtm(partida_titulo, palabra, n)
+  cast_dtm(partida_titulo_ley, palabra, n)
 
 # Ahora estás listo para usar el paquete topicmodels y crear un modelo LDA 
 # con varios tópicos. Lo vas hacer con uno por cada PARTIDA
@@ -83,7 +86,7 @@ partidas_lda_td <- tidy(partidas_lda, matrix = "beta")
 
 terminos_frecuentes <- partidas_lda_td %>%
   group_by(topic) %>%
-  top_n(10, beta) %>%
+  top_n(15, beta) %>%
   ungroup() %>%
   arrange(topic, -beta)
 
@@ -100,58 +103,3 @@ terminos_frecuentes %>%
   geom_col(show.legend = FALSE) +
   facet_wrap(~ topic, scales = "free") +
   coord_flip()
-
-##############
-###### STOP HERE
-
-# Clasificación por documento
-
-# Cada TÍTULO es un "documento" en este análisis. Por lo tanto, es posible que deseemos 
-# saber qué temas están asociados con cada documento. 
-
-# Surge una cuestión importante: ¿Podemos juntar los capítulos en los libros correctos?
-
-partidas_lda_gamma <- tidy(partidas_lda, matrix = "gamma")
-partidas_lda_gamma
-
-# Configuración de matriz = "gamma" devuelve una versión ordenada con un documento 
-# y podemos ver el grado de acierto del aprendizaje no supervisado para distinguir 
-# entre los libros considerados.
-# Primero se ha de separar el nombre del documento en título y número de capítulo:
-
-partidas_lda_gamma <- partidas_lda_gamma %>%
-  separate(document, c("partida", "titulo"), sep = "_", convert = TRUE)
-partidas_lda_gamma
-
-
-# Cuando examinamos resultados
-ggplot(partidas_lda_gamma, aes(gamma, fill = factor(topic))) +
-  geom_histogram() +
-  facet_wrap(~ partida, nrow = 4)
-
-
-
-partidas_clasificaciones <- partidas_lda_gamma %>%
-  group_by(partida) %>%
-  top_n(1, gamma) %>%
-  ungroup() %>%
-  arrange(gamma)
-
-partidas_clasificaciones
-
-# Lo siguiente confirma numéricamente lo que se ha visto en el gráfico anterior
-# ya que busca el libro de consenso para cada tópico
-
-topicos_libro <- partidas_clasificaciones %>%
-  count(partida, topic) %>%
-  top_n(1, n) %>%
-  ungroup() %>%
-  transmute(consensus = partida, topic)
-
-topicos_libro
-
-# Extrae qué títulos no están bien asignados
-
-partidas_clasificaciones %>%
-  inner_join(topicos_libro, by = "topic") %>%
-  filter(partida != consensus)
