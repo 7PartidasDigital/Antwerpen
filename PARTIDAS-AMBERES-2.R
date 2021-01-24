@@ -31,7 +31,7 @@ por_titulo_palabras %>%
 
 # Elimina palabras vacías
 
-partidas <- read_tsv("https://tinyurl.com/SPAntwerpen-2")
+vacias <- read_tsv("https://tinyurl.com/SPAntwerpen-2")
 
 palabra_conteo <- por_titulo_palabras %>%   
   anti_join(vacias)
