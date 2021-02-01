@@ -1,4 +1,16 @@
+# Instala las librerías
+install.packages("tidyverse")
+install.packages("tidytext") 
+install.packages("tm")
+install.packages("topicmodels")
+
+# Esta acción solo la tienes que hacer la primera vez
+# que uses RStudio. En sesiones sucesivas o con scripts
+# sucesivos que usen estas liberías basta con que cargues
+# las librerías.
+
 # Carga las librerías necesarias
+# Se hace siempre
 library(tidyverse)
 library(tidytext) 
 library(tm)
