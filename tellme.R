@@ -49,11 +49,11 @@ especiales <- tibble(palabra = c(""))
 # Las eliminamos
 palabra_conteo <- palabra_conteo %>%   
   anti_join(especiales)
-
 # Y ahora podemos saber cuántas palabras de "valor" hay en cada temporada
 # y cuál es su frecuencia
-
 palabra_conteo
+
+
 
 # En este momento, este dataframe está ordenado,
 # con un término por documento por fila. 
@@ -70,7 +70,7 @@ temporadas_dtm <- palabra_conteo %>%
 # con varios tópicos. Lo vas hacer con uno por cada temporada
 # Por eso el valor de k = 10
 
-temporadas_lda <- LDA(temporadas_dtm, k = 10, control = list(seed = 1234)) # Ojo al valor de k
+temporadas_lda <- LDA(temporadas_dtm, k = 21, control = list(seed = 1234)) # Ojo al valor de k
 
 # temporadas_lda
 
@@ -80,7 +80,7 @@ temporadas_lda <- LDA(temporadas_dtm, k = 10, control = list(seed = 1234)) # Ojo
 # utilizando las voces ordenadas.
 
 temporadas_lda_td <- tidy(temporadas_lda, matrix = "beta")
-temporadas_lda_td %>% print(n = 21)
+temporadas_lda_td
 
 
 # Para cada combinación, el modelo decide la probabilidad de que ese término
@@ -89,7 +89,7 @@ temporadas_lda_td %>% print(n = 21)
 
 terminos_frecuentes <- temporadas_lda_td %>%
   group_by(topic) %>%
-  top_n(15, beta) %>%
+  top_n(10, beta) %>%
   ungroup() %>%
   arrange(topic, -beta)
 
@@ -132,9 +132,13 @@ palabras_temporada <- left_join(palabras_temporada,
               temporada,
               n) %>%
   group_by(temporada) %>%
-  top_n(10, tf_idf) %>%
+  top_n(5, tf_idf) %>%
   ungroup()
 
+# Listado
+palabras_temporada %>%
+  count(temporada, palabra, tf_idf) %>%
+print(n = 50)
 
 ggplot(palabras_temporada,
        aes(reorder(palabra,
@@ -148,7 +152,7 @@ ggplot(palabras_temporada,
 
 
 
-CARACTERÍSTICA POR EPISODIO
+# CARACTERÍSTICA POR EPISODIO
 
 cuentame <- read_tsv("https://raw.githubusercontent.com/7PartidasDigital/Antwerpen/main/cuentame.tsv")
 
@@ -174,14 +178,21 @@ palabras_episodio <- left_join(palabras_episodio,
   top_n(5, tf_idf) %>%
   ungroup()
 
+
+palabras_episodio %>%
+  count(episodio, palabra, tf_idf) #%>%
+  print(n = 50)
+
+
+
 ggplot(palabras_episodio,
        aes(reorder(palabra,
                    tf_idf),
            tf_idf,
-           fill = epeisodio)) +
+           fill = episodio)) +
   geom_col(show.legend = FALSE) +
   labs(x = NULL, y = "tf-idf") +
-  facet_wrap( ~ opisodio, ncol = 5, scales = "free") +
+  facet_wrap( ~ episodio, ncol = 10, scales = "free") +
   coord_flip()
 
 #####
